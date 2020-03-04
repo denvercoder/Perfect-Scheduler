@@ -80,21 +80,29 @@ namespace Backup.Service.Helpers
 
         private async Task UploadToAzureBlobStorage(string schedule, string path, string fileName)
         {
+            bool disabled = true;
+
             try
             {
-                if (CloudStorageAccount.TryParse(StorageConnectionString, out CloudStorageAccount cloudStorageAccount))
+                if (!disabled)
                 {
-                    _logger.Info($"{DateTime.Now}: The UploadToAzureBlobStorage() is called with {schedule} schedule");
-                    var cloudBlobClient = cloudStorageAccount.CreateCloudBlobClient();
-                    var cloudBlobContainer = cloudBlobClient.GetContainerReference(schedule);
-                    var cloudBlockBlob = cloudBlobContainer.GetBlockBlobReference(fileName);
-                    await cloudBlockBlob.UploadFromFileAsync(path);
-                    _logger.Info($"{DateTime.Now}: The file is been uploaded to the blob with {schedule} schedule");
-                }
-                else
-                {
-                    _logger.Error($"{DateTime.Now}: {CustomConstants.NoStorageConnectionStringSettings}");
-                    throw new CustomConfigurationException(CustomConstants.NoStorageConnectionStringSettings);
+
+                    if (CloudStorageAccount.TryParse(StorageConnectionString, out CloudStorageAccount cloudStorageAccount))
+                    {
+                        _logger.Info($"{DateTime.Now}: The UploadToAzureBlobStorage() is called with {schedule} schedule");
+                        var cloudBlobClient = cloudStorageAccount.CreateCloudBlobClient();
+                        var cloudBlobContainer = cloudBlobClient.GetContainerReference(schedule);
+                        var cloudBlockBlob = cloudBlobContainer.GetBlockBlobReference(fileName);
+                        await cloudBlockBlob.UploadFromFileAsync(path);
+                        _logger.Info($"{DateTime.Now}: The file is been uploaded to the blob with {schedule} schedule");
+                    }
+                    else
+                    {
+                        // Uncomment to upload files to Azure
+
+                        //_logger.Error($"{DateTime.Now}: {CustomConstants.NoStorageConnectionStringSettings}");
+                        //throw new CustomConfigurationException(CustomConstants.NoStorageConnectionStringSettings);
+                    }
                 }
             }
             catch (Exception ex)
